@@ -16,7 +16,7 @@ class TrainingTab(QWidget):
         layout = QVBoxLayout(self)
 
         # Project Configuration
-        config_group = QGroupBox("Project Configuration")
+        config_group = QGroupBox("專案設定")
         config_layout = QFormLayout()
 
         self.project_name_edit = QLineEdit("MyYOLOProject")
@@ -24,48 +24,48 @@ class TrainingTab(QWidget):
         self.version_combo = QComboBox()
         self.version_combo.addItems(["YOLOv8", "YOLOv11", "YOLOv5"])
         
-        config_layout.addRow("Project Name:", self.project_name_edit)
-        config_layout.addRow("Model Name:", self.model_name_edit)
-        config_layout.addRow("YOLO Version:", self.version_combo)
+        config_layout.addRow("專案名稱:", self.project_name_edit)
+        config_layout.addRow("模型名稱:", self.model_name_edit)
+        config_layout.addRow("YOLO 版本:", self.version_combo)
         config_group.setLayout(config_layout)
         layout.addWidget(config_group)
 
         # Dataset Selection
-        dataset_group = QGroupBox("Dataset Selection")
+        dataset_group = QGroupBox("資料集選擇")
         dataset_layout = QFormLayout()
 
-        self.train_images_edit = self.create_file_selector(dataset_layout, "Train Images:")
-        self.train_labels_edit = self.create_file_selector(dataset_layout, "Train Labels:")
-        self.val_images_edit = self.create_file_selector(dataset_layout, "Val Images (Optional):")
-        self.val_labels_edit = self.create_file_selector(dataset_layout, "Val Labels (Optional):")
+        self.train_images_edit = self.create_file_selector(dataset_layout, "訓練圖片路徑:")
+        self.train_labels_edit = self.create_file_selector(dataset_layout, "訓練標籤路徑:")
+        self.val_images_edit = self.create_file_selector(dataset_layout, "驗證圖片路徑 (選填):")
+        self.val_labels_edit = self.create_file_selector(dataset_layout, "驗證標籤路徑 (選填):")
         
         # Class Names
         self.class_names_edit = QLineEdit()
-        self.class_names_edit.setPlaceholderText("cat, dog, person (comma separated)")
-        dataset_layout.addRow("Class Names:", self.class_names_edit)
+        self.class_names_edit.setPlaceholderText("cat, dog, person (請用逗號分隔)")
+        dataset_layout.addRow("類別名稱:", self.class_names_edit)
 
         dataset_group.setLayout(dataset_layout)
         layout.addWidget(dataset_group)
 
         # Hyperparameters
-        param_group = QGroupBox("Hyperparameters")
+        param_group = QGroupBox("超參數設定")
         param_layout = QHBoxLayout()
 
         self.epochs_spin = QSpinBox()
         self.epochs_spin.setRange(1, 10000)
         self.epochs_spin.setValue(100)
-        self.epochs_spin.setPrefix("Epochs: ")
+        self.epochs_spin.setPrefix("訓練輪數 (Epochs): ")
 
         self.batch_spin = QSpinBox()
         self.batch_spin.setRange(1, 512)
         self.batch_spin.setValue(16)
-        self.batch_spin.setPrefix("Batch: ")
+        self.batch_spin.setPrefix("批次大小 (Batch): ")
 
         self.imgsz_spin = QSpinBox()
         self.imgsz_spin.setRange(32, 2048)
         self.imgsz_spin.setValue(640)
         self.imgsz_spin.setSingleStep(32)
-        self.imgsz_spin.setPrefix("Img Size: ")
+        self.imgsz_spin.setPrefix("圖片尺寸 (Img Size): ")
 
         param_layout.addWidget(self.epochs_spin)
         param_layout.addWidget(self.batch_spin)
@@ -74,7 +74,7 @@ class TrainingTab(QWidget):
         layout.addWidget(param_group)
 
         # Controls & Logs
-        self.train_btn = QPushButton("Start Training")
+        self.train_btn = QPushButton("開始訓練")
         self.train_btn.setMinimumHeight(40)
         self.train_btn.clicked.connect(self.on_train_clicked)
         
@@ -94,7 +94,7 @@ class TrainingTab(QWidget):
         h_layout.setContentsMargins(0, 0, 0, 0)
         
         line_edit = QLineEdit()
-        btn = QPushButton("Browse")
+        btn = QPushButton("瀏覽")
         btn.clicked.connect(lambda: self.browse_folder(line_edit))
         
         h_layout.addWidget(line_edit)
@@ -104,7 +104,7 @@ class TrainingTab(QWidget):
         return line_edit
 
     def browse_folder(self, line_edit):
-        folder = QFileDialog.getExistingDirectory(self, "Select Directory")
+        folder = QFileDialog.getExistingDirectory(self, "選擇資料夾")
         if folder:
             line_edit.setText(folder)
 
@@ -123,7 +123,7 @@ class TrainingTab(QWidget):
             "imgsz": self.imgsz_spin.value()
         }
         self.train_requested.emit(config)
-        self.log_output.append("Training requested...")
+        self.log_output.append("請求訓練中...")
         self.train_btn.setEnabled(False)
 
     def append_log(self, message):
@@ -135,4 +135,4 @@ class TrainingTab(QWidget):
     def training_finished(self):
         self.train_btn.setEnabled(True)
         self.progress_bar.setValue(100)
-        self.append_log("Training Completed!")
+        self.append_log("訓練完成！")

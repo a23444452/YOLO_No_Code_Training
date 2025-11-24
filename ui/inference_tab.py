@@ -18,16 +18,16 @@ class InferenceTab(QWidget):
         layout = QVBoxLayout(self)
 
         # Configuration
-        config_group = QGroupBox("Inference Configuration")
+        config_group = QGroupBox("推論設定")
         config_layout = QVBoxLayout()
 
         # Model Selection
         model_layout = QHBoxLayout()
         self.model_path_edit = QLineEdit()
-        self.model_path_edit.setPlaceholderText("Path to .pt or .onnx model")
-        model_btn = QPushButton("Select Model")
+        self.model_path_edit.setPlaceholderText("選擇 .pt 或 .onnx 模型檔")
+        model_btn = QPushButton("選擇模型")
         model_btn.clicked.connect(self.browse_model)
-        model_layout.addWidget(QLabel("Model:"))
+        model_layout.addWidget(QLabel("模型路徑:"))
         model_layout.addWidget(self.model_path_edit)
         model_layout.addWidget(model_btn)
         config_layout.addLayout(model_layout)
@@ -35,15 +35,15 @@ class InferenceTab(QWidget):
         # Image Folder Selection
         folder_layout = QHBoxLayout()
         self.image_folder_edit = QLineEdit()
-        self.image_folder_edit.setPlaceholderText("Path to folder containing images")
-        folder_btn = QPushButton("Select Images")
+        self.image_folder_edit.setPlaceholderText("選擇包含圖片的資料夾")
+        folder_btn = QPushButton("選擇圖片")
         folder_btn.clicked.connect(self.browse_folder)
-        folder_layout.addWidget(QLabel("Images:"))
+        folder_layout.addWidget(QLabel("圖片資料夾:"))
         folder_layout.addWidget(self.image_folder_edit)
         folder_layout.addWidget(folder_btn)
         config_layout.addLayout(folder_layout)
 
-        self.run_btn = QPushButton("Run Inference")
+        self.run_btn = QPushButton("執行推論")
         self.run_btn.clicked.connect(self.on_run_clicked)
         config_layout.addWidget(self.run_btn)
 
@@ -59,7 +59,7 @@ class InferenceTab(QWidget):
         splitter.addWidget(self.file_list)
 
         # Image Viewer
-        self.image_label = QLabel("Select an image to view results")
+        self.image_label = QLabel("請選擇一張圖片以查看結果")
         self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setMinimumSize(400, 400)
         self.image_label.setStyleSheet("border: 1px solid gray; background-color: #f0f0f0;")
@@ -75,12 +75,12 @@ class InferenceTab(QWidget):
         layout.addWidget(splitter)
 
     def browse_model(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Model", "", "Model Files (*.pt *.onnx)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "選擇模型", "", "Model Files (*.pt *.onnx)")
         if file_path:
             self.model_path_edit.setText(file_path)
 
     def browse_folder(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select Image Folder")
+        folder = QFileDialog.getExistingDirectory(self, "選擇圖片資料夾")
         if folder:
             self.image_folder_edit.setText(folder)
 
@@ -93,7 +93,7 @@ class InferenceTab(QWidget):
             self.current_results = {}
             self.inference_requested.emit(model_path, img_folder)
         else:
-            self.details_text.setText("Please select both model and image folder.")
+            self.details_text.setText("請選擇模型和圖片資料夾。")
 
     def update_results(self, results):
         # results is a list of dicts: {'file': path, 'detections': [...], 'image_path': ...}
@@ -122,7 +122,7 @@ class InferenceTab(QWidget):
         
         pixmap = QPixmap(image_path)
         if pixmap.isNull():
-            self.image_label.setText("Failed to load image")
+            self.image_label.setText("無法載入圖片")
             return
 
         # Draw bounding boxes
@@ -146,13 +146,13 @@ class InferenceTab(QWidget):
 
     def display_details(self, data):
         detections = data['detections']
-        text = f"File: {os.path.basename(data['image_path'])}\n"
-        text += f"Detections: {len(detections)}\n\n"
+        text = f"檔案: {os.path.basename(data['image_path'])}\n"
+        text += f"偵測數量: {len(detections)}\n\n"
         
         for i, det in enumerate(detections):
             x1, y1, x2, y2, conf, cls_name = det
             text += f"{i+1}. {cls_name}\n"
-            text += f"   Conf: {conf:.2f}\n"
-            text += f"   ROI: [{int(x1)}, {int(y1)}, {int(x2)}, {int(y2)}]\n\n"
+            text += f"   信心度: {conf:.2f}\n"
+            text += f"   位置 (ROI): [{int(x1)}, {int(y1)}, {int(x2)}, {int(y2)}]\n\n"
             
         self.details_text.setText(text)
