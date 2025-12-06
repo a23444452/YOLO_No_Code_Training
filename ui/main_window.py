@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QMessageBox
 from ui.training_tab import TrainingTab
 from ui.inference_tab import InferenceTab
+from ui.dataset_tab import DatasetTab
 from core.worker import TrainingWorker, InferenceWorker
 
 class MainWindow(QMainWindow):
@@ -12,9 +13,11 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
 
+        self.dataset_tab = DatasetTab()
         self.training_tab = TrainingTab()
         self.inference_tab = InferenceTab()
 
+        self.tabs.addTab(self.dataset_tab, "資料集製作")
         self.tabs.addTab(self.training_tab, "訓練")
         self.tabs.addTab(self.inference_tab, "推論")
 
