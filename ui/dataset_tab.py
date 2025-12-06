@@ -30,6 +30,8 @@ class DatasetWorker(QThread):
             self.error_signal.emit(str(e))
 
 class DatasetTab(QWidget):
+    dataset_ready = Signal(str) # Emits the root path of the new dataset
+
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -106,14 +108,15 @@ class DatasetTab(QWidget):
 
         self.worker = DatasetWorker(source, final_output, ratio)
         self.worker.log_signal.connect(self.log_output.append)
-        self.worker.finished_signal.connect(self.on_finished)
+        self.worker.finished_signal.connect(lambda: self.on_finished(final_output))
         self.worker.error_signal.connect(self.on_error)
         self.worker.start()
 
-    def on_finished(self):
+    def on_finished(self, output_path):
         self.convert_btn.setEnabled(True)
         QMessageBox.information(self, "成功", "資料集轉換完成！")
         self.log_output.append("完成。")
+        self.dataset_ready.emit(output_path)
 
     def on_error(self, err):
         self.convert_btn.setEnabled(True)

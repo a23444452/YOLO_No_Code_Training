@@ -1,13 +1,13 @@
 import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QFileDialog, QListWidget, QSplitter, QTextEdit, QGroupBox
+    QFileDialog, QListWidget, QSplitter, QTextEdit, QGroupBox, QCheckBox
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QImage, QPainter, QPen, QColor
 
 class InferenceTab(QWidget):
-    inference_requested = Signal(str, str) # model_path, image_folder
+    inference_requested = Signal(str, str, bool) # model_path, image_folder, use_gray
 
     def __init__(self):
         super().__init__()
@@ -46,6 +46,10 @@ class InferenceTab(QWidget):
         self.run_btn = QPushButton("執行推論")
         self.run_btn.clicked.connect(self.on_run_clicked)
         config_layout.addWidget(self.run_btn)
+
+        # Options
+        self.gray_check = QCheckBox("轉為灰階 (Convert to Grayscale)")
+        config_layout.addWidget(self.gray_check)
 
         config_group.setLayout(config_layout)
         layout.addWidget(config_group)
@@ -87,11 +91,13 @@ class InferenceTab(QWidget):
     def on_run_clicked(self):
         model_path = self.model_path_edit.text()
         img_folder = self.image_folder_edit.text()
+        use_gray = self.gray_check.isChecked()
+
         if model_path and img_folder:
             self.run_btn.setEnabled(False)
             self.file_list.clear()
             self.current_results = {}
-            self.inference_requested.emit(model_path, img_folder)
+            self.inference_requested.emit(model_path, img_folder, use_gray)
         else:
             self.details_text.setText("請選擇模型和圖片資料夾。")
 

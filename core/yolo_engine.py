@@ -34,13 +34,20 @@ class YOLOManager:
         
         self.model = YOLO(base_model)
 
+        # Attach progress callback
+        if progress_callback:
+            def on_train_epoch_end(trainer):
+                current_epoch = trainer.epoch + 1
+                total_epochs = trainer.epochs
+                progress = int((current_epoch / total_epochs) * 100)
+                progress_callback(progress)
+            
+            self.model.add_callback("on_train_epoch_end", on_train_epoch_end)
+
         if log_callback:
             log_callback(f"Starting training for {epochs} epochs...")
 
         # Train
-        # Note: Ultralytics train() is blocking. We rely on the worker thread to keep UI alive.
-        # We can't easily hook into real-time progress without custom callbacks or parsing stdout.
-        # For simplicity, we just run it.
         results = self.model.train(
             data=data_yaml,
             epochs=epochs,
@@ -63,7 +70,7 @@ class YOLOManager:
         
         return results.save_dir
 
-    def predict(self, model_path, image_folder):
+    def predict(self, model_path, image_folder, use_gray=False):
         """
         Run inference on a folder of images.
         """
@@ -76,28 +83,44 @@ class YOLOManager:
         
         results_data = []
         
-        # Run prediction
-        # stream=True returns a generator, good for memory
-        results = model.predict(images, stream=True)
-        
-        for res in results:
-            # Process result
-            path = res.path
-            boxes = res.boxes
+        import cv2
+        import numpy as np
+
+        for img_path in images:
+            # Prepare source
+            if use_gray:
+                # Read as gray, convert to BGR (YOLO expects 3 channels)
+                img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+                if img is None: continue
+                source = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+            else:
+                source = img_path
+
+            # Run prediction
+            # stream=False for single image processing loop to handle custom source
+            results = model.predict(source, verbose=False)
             
-            detections = []
-            for box in boxes:
-                # x1, y1, x2, y2
-                coords = box.xyxy[0].tolist()
-                conf = float(box.conf[0])
-                cls_id = int(box.cls[0])
-                cls_name = model.names[cls_id]
+            for res in results:
+                # Process result
+                boxes = res.boxes
                 
-                detections.append(coords + [conf, cls_name])
-            
-            results_data.append({
-                'image_path': path,
-                'detections': detections
-            })
+                detections = []
+                for box in boxes:
+                    # x1, y1, x2, y2
+                    coords = box.xyxy[0].tolist()
+                    conf = float(box.conf[0])
+                    cls_id = int(box.cls[0])
+                    # Handle ONNX model names (sometimes missing or dict)
+                    if hasattr(model, 'names') and model.names:
+                        cls_name = model.names[cls_id]
+                    else:
+                        cls_name = str(cls_id)
+                    
+                    detections.append(coords + [conf, cls_name])
+                
+                results_data.append({
+                    'image_path': img_path, # Keep original path for display
+                    'detections': detections
+                })
             
         return results_data

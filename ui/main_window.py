@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.inference_tab, "推論")
 
         # Connect Signals
+        self.dataset_tab.dataset_ready.connect(self.training_tab.set_dataset_paths)
         self.training_tab.train_requested.connect(self.start_training)
         self.inference_tab.inference_requested.connect(self.start_inference)
 
@@ -35,6 +36,7 @@ class MainWindow(QMainWindow):
 
         self.train_worker = TrainingWorker(config)
         self.train_worker.log_signal.connect(self.training_tab.append_log)
+        self.train_worker.progress_signal.connect(self.training_tab.update_progress)
         self.train_worker.finished_signal.connect(self.on_training_finished)
         self.train_worker.error_signal.connect(self.on_training_error)
         
@@ -49,11 +51,11 @@ class MainWindow(QMainWindow):
         self.training_tab.train_btn.setEnabled(True) # Re-enable button
         QMessageBox.critical(self, "錯誤", f"訓練失敗: {err_msg}")
 
-    def start_inference(self, model_path, image_folder):
+    def start_inference(self, model_path, image_folder, use_gray):
         if self.inf_worker and self.inf_worker.isRunning():
             return
 
-        self.inf_worker = InferenceWorker(model_path, image_folder)
+        self.inf_worker = InferenceWorker(model_path, image_folder, use_gray)
         self.inf_worker.results_signal.connect(self.inference_tab.update_results)
         self.inf_worker.error_signal.connect(self.on_inference_error)
         

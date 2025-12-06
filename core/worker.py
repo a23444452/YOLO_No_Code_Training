@@ -7,6 +7,7 @@ import io
 
 class TrainingWorker(QThread):
     log_signal = Signal(str)
+    progress_signal = Signal(int)
     finished_signal = Signal()
     error_signal = Signal(str)
 
@@ -33,6 +34,7 @@ class TrainingWorker(QThread):
             # Start Training
             self.manager.train(
                 self.config, 
+                progress_callback=lambda p: self.progress_signal.emit(p),
                 log_callback=lambda msg: self.log_signal.emit(msg)
             )
             
@@ -45,15 +47,16 @@ class InferenceWorker(QThread):
     results_signal = Signal(list)
     error_signal = Signal(str)
 
-    def __init__(self, model_path, image_folder):
+    def __init__(self, model_path, image_folder, use_gray=False):
         super().__init__()
         self.model_path = model_path
         self.image_folder = image_folder
+        self.use_gray = use_gray
         self.manager = YOLOManager()
 
     def run(self):
         try:
-            results = self.manager.predict(self.model_path, self.image_folder)
+            results = self.manager.predict(self.model_path, self.image_folder, self.use_gray)
             self.results_signal.emit(results)
         except Exception as e:
             self.error_signal.emit(str(e))

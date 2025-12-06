@@ -136,3 +136,15 @@ class TrainingTab(QWidget):
         self.train_btn.setEnabled(True)
         self.progress_bar.setValue(100)
         self.append_log("訓練完成！")
+
+    def set_dataset_paths(self, root_path):
+        """Auto-fill dataset paths based on standard structure"""
+        import os
+        self.train_images_edit.setText(os.path.join(root_path, "images", "train"))
+        self.train_labels_edit.setText(os.path.join(root_path, "labels", "train"))
+        self.val_images_edit.setText(os.path.join(root_path, "images", "val"))
+        self.val_labels_edit.setText(os.path.join(root_path, "labels", "val"))
+        self.append_log(f"已自動帶入資料集路徑: {root_path}")
+
+    def update_progress(self, value):
+        self.progress_bar.setValue(value)
