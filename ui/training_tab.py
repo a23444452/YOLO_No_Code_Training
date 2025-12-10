@@ -49,27 +49,68 @@ class TrainingTab(QWidget):
 
         # Hyperparameters
         param_group = QGroupBox("超參數設定")
-        param_layout = QHBoxLayout()
+        param_layout = QFormLayout() # Changed to FormLayout for better alignment of many items
 
+        # Row 1: Epochs, Batch, ImgSize
+        row1_layout = QHBoxLayout()
+        
         self.epochs_spin = QSpinBox()
         self.epochs_spin.setRange(1, 10000)
         self.epochs_spin.setValue(100)
-        self.epochs_spin.setPrefix("訓練輪數 (Epochs): ")
-
+        self.epochs_spin.setPrefix("Epochs: ")
+        
         self.batch_spin = QSpinBox()
         self.batch_spin.setRange(1, 512)
         self.batch_spin.setValue(16)
-        self.batch_spin.setPrefix("批次大小 (Batch): ")
+        self.batch_spin.setPrefix("Batch: ")
 
         self.imgsz_spin = QSpinBox()
         self.imgsz_spin.setRange(32, 2048)
         self.imgsz_spin.setValue(640)
         self.imgsz_spin.setSingleStep(32)
-        self.imgsz_spin.setPrefix("圖片尺寸 (Img Size): ")
+        self.imgsz_spin.setPrefix("ImgSz: ")
 
-        param_layout.addWidget(self.epochs_spin)
-        param_layout.addWidget(self.batch_spin)
-        param_layout.addWidget(self.imgsz_spin)
+        row1_layout.addWidget(self.epochs_spin)
+        row1_layout.addWidget(self.batch_spin)
+        row1_layout.addWidget(self.imgsz_spin)
+        param_layout.addRow("基本設定:", row1_layout)
+
+        # Row 2: Advanced Settings
+        row2_layout = QHBoxLayout()
+
+        # Device
+        self.device_combo = QComboBox()
+        self.device_combo.addItems(["Auto", "CPU", "GPU (CUDA)", "GPU (MPS)"])
+        self.device_combo.setToolTip("選擇訓練裝置")
+        
+        # Workers
+        self.workers_spin = QSpinBox()
+        self.workers_spin.setRange(0, 32)
+        self.workers_spin.setValue(8)
+        self.workers_spin.setPrefix("Workers: ")
+        self.workers_spin.setToolTip("資料載入執行緒數量")
+
+        # Optimizer
+        self.optimizer_combo = QComboBox()
+        self.optimizer_combo.addItems(["auto", "SGD", "Adam", "AdamW", "RMSProp"])
+        self.optimizer_combo.setToolTip("優化器選擇")
+
+        # Patience
+        self.patience_spin = QSpinBox()
+        self.patience_spin.setRange(0, 1000)
+        self.patience_spin.setValue(50)
+        self.patience_spin.setPrefix("Patience: ")
+        self.patience_spin.setToolTip("Early Stopping 耐心值")
+
+        row2_layout.addWidget(QLabel("Device:"))
+        row2_layout.addWidget(self.device_combo)
+        row2_layout.addWidget(self.workers_spin)
+        row2_layout.addWidget(QLabel("Opt:"))
+        row2_layout.addWidget(self.optimizer_combo)
+        row2_layout.addWidget(self.patience_spin)
+        
+        param_layout.addRow("進階設定:", row2_layout)
+
         param_group.setLayout(param_layout)
         layout.addWidget(param_group)
 
@@ -120,7 +161,11 @@ class TrainingTab(QWidget):
             "classes": self.class_names_edit.text(),
             "epochs": self.epochs_spin.value(),
             "batch": self.batch_spin.value(),
-            "imgsz": self.imgsz_spin.value()
+            "imgsz": self.imgsz_spin.value(),
+            "device": self.device_combo.currentText(),
+            "workers": self.workers_spin.value(),
+            "optimizer": self.optimizer_combo.currentText(),
+            "patience": self.patience_spin.value()
         }
         self.train_requested.emit(config)
         self.log_output.append("請求訓練中...")

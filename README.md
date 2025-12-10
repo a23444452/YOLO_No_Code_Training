@@ -76,7 +76,12 @@ python main.py
     *   (選填) 選擇 **驗證圖片** 與 **驗證標籤** 路徑。
     *   **類別名稱**: 輸入物件類別名稱，以逗號分隔 (例如: `cat, dog, person`)。
 *   **超參數設定**:
-    *   調整 Epochs (訓練次數)、Batch Size (批次大小)、Img Size (圖片解析度)。
+    *   **基本設定**: 調整 Epochs (訓練次數)、Batch Size (批次大小)、Img Size (圖片解析度)。
+    *   **進階設定**:
+        *   **Device**: 選擇訓練裝置 (Auto, CPU, GPU)。
+        *   **Workers**: 資料載入執行緒數量。
+        *   **Optimizer**: 選擇優化器 (SGD, Adam, AdamW 等)。
+        *   **Patience**: Early Stopping 的耐心值 (當指標不再提升時，等待多少 Epochs 後停止)。
 *   **開始訓練**:
     *   點擊「開始訓練」按鈕。程式會自動下載預訓練模型並開始訓練。
     *   **進度條**: 下方的進度條會隨著訓練 Epoch 的完成而即時更新。

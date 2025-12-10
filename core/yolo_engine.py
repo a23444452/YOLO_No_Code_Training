@@ -18,6 +18,22 @@ class YOLOManager:
         batch = config.get('batch', 16)
         imgsz = config.get('imgsz', 640)
         data_yaml = config.get('data_yaml')
+        
+        # Advanced hyperparameters
+        device_str = config.get('device', 'Auto')
+        workers = config.get('workers', 8)
+        optimizer = config.get('optimizer', 'auto')
+        patience = config.get('patience', 50)
+
+        # Map device string to YOLO format
+        device = None
+        if device_str == 'CPU':
+            device = 'cpu'
+        elif device_str == 'GPU (CUDA)':
+            device = '0'
+        elif device_str == 'GPU (MPS)':
+            device = 'mps'
+        # 'Auto' remains None
 
         # Determine base model
         if version == 'YOLOv8':
@@ -46,6 +62,7 @@ class YOLOManager:
 
         if log_callback:
             log_callback(f"Starting training for {epochs} epochs...")
+            log_callback(f"Device: {device_str}, Workers: {workers}, Opt: {optimizer}, Patience: {patience}")
 
         # Train
         results = self.model.train(
@@ -53,6 +70,10 @@ class YOLOManager:
             epochs=epochs,
             batch=batch,
             imgsz=imgsz,
+            device=device,
+            workers=workers,
+            optimizer=optimizer,
+            patience=patience,
             project=project_name,
             name=model_name,
             exist_ok=True, # Overwrite existing project/name
