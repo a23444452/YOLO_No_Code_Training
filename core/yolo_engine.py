@@ -24,6 +24,15 @@ class YOLOManager:
         workers = config.get('workers', 8)
         optimizer = config.get('optimizer', 'auto')
         patience = config.get('patience', 50)
+        
+        # Optimization & Augmentation
+        lr0 = config.get('lr0', 0.01)
+        cos_lr = config.get('cos_lr', False)
+        rect = config.get('rect', False)
+        cache = config.get('cache', False)
+        degrees = config.get('degrees', 0.0)
+        fliplr = config.get('fliplr', 0.5)
+        mosaic = config.get('mosaic', 1.0)
 
         # Map device string to YOLO format
         device = None
@@ -63,6 +72,8 @@ class YOLOManager:
         if log_callback:
             log_callback(f"Starting training for {epochs} epochs...")
             log_callback(f"Device: {device_str}, Workers: {workers}, Opt: {optimizer}, Patience: {patience}")
+            log_callback(f"LR0: {lr0}, CosLR: {cos_lr}, Rect: {rect}, Cache: {cache}")
+            log_callback(f"Augmentation - Degrees: {degrees}, FlipLR: {fliplr}, Mosaic: {mosaic}")
 
         # Train
         results = self.model.train(
@@ -74,6 +85,13 @@ class YOLOManager:
             workers=workers,
             optimizer=optimizer,
             patience=patience,
+            lr0=lr0,
+            cos_lr=cos_lr,
+            rect=rect,
+            cache=cache,
+            degrees=degrees,
+            fliplr=fliplr,
+            mosaic=mosaic,
             project=project_name,
             name=model_name,
             exist_ok=True, # Overwrite existing project/name

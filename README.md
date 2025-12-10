@@ -82,6 +82,15 @@ python main.py
         *   **Workers**: 資料載入執行緒數量。
         *   **Optimizer**: 選擇優化器 (SGD, Adam, AdamW 等)。
         *   **Patience**: Early Stopping 的耐心值 (當指標不再提升時，等待多少 Epochs 後停止)。
+    *   **優化參數**:
+        *   **LR0**: 初始學習率 (Initial Learning Rate)。
+        *   **Cosine LR**: 是否使用餘弦退火 (Cosine Annealing) 調整學習率。
+        *   **Rect**: 矩形訓練 (Rectangular Training)，適合非正方形圖片。
+        *   **Cache**: 是否將圖片快取至 RAM 以加速訓練。
+    *   **資料增強 (Augmentation)**:
+        *   **旋轉 (Degrees)**: 隨機旋轉角度範圍 (+/- 度)。
+        *   **左右翻轉 (FlipLR)**: 隨機左右翻轉的機率。
+        *   **Mosaic**: 馬賽克增強的機率 (將 4 張圖拼成一張)。
 *   **開始訓練**:
     *   點擊「開始訓練」按鈕。程式會自動下載預訓練模型並開始訓練。
     *   **進度條**: 下方的進度條會隨著訓練 Epoch 的完成而即時更新。

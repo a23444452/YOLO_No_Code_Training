@@ -1,7 +1,8 @@
 import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QComboBox, QSpinBox, QFileDialog, QProgressBar, QTextEdit, QGroupBox, QFormLayout
+    QComboBox, QSpinBox, QFileDialog, QProgressBar, QTextEdit, QGroupBox, QFormLayout,
+    QCheckBox, QDoubleSpinBox
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -111,6 +112,63 @@ class TrainingTab(QWidget):
         
         param_layout.addRow("進階設定:", row2_layout)
 
+        # Row 3: Optimization Details
+        row3_layout = QHBoxLayout()
+
+        self.lr0_spin = QDoubleSpinBox()
+        self.lr0_spin.setRange(0.0001, 0.1)
+        self.lr0_spin.setSingleStep(0.001)
+        self.lr0_spin.setDecimals(4)
+        self.lr0_spin.setValue(0.01)
+        self.lr0_spin.setPrefix("LR0: ")
+        self.lr0_spin.setToolTip("初始學習率 (Initial Learning Rate)")
+
+        self.cos_lr_check = QCheckBox("Cosine LR")
+        self.cos_lr_check.setToolTip("使用餘弦退火調整學習率")
+        
+        self.rect_check = QCheckBox("Rect")
+        self.rect_check.setToolTip("矩形訓練 (Rectangular Training)")
+        
+        self.cache_check = QCheckBox("Cache")
+        self.cache_check.setToolTip("快取圖片至 RAM (Cache Images)")
+
+        row3_layout.addWidget(self.lr0_spin)
+        row3_layout.addWidget(self.cos_lr_check)
+        row3_layout.addWidget(self.rect_check)
+        row3_layout.addWidget(self.cache_check)
+        
+        param_layout.addRow("優化參數:", row3_layout)
+
+        # Row 4: Augmentation
+        row4_layout = QHBoxLayout()
+
+        self.degrees_spin = QDoubleSpinBox()
+        self.degrees_spin.setRange(-180.0, 180.0)
+        self.degrees_spin.setValue(0.0)
+        self.degrees_spin.setPrefix("旋轉: ")
+        self.degrees_spin.setSuffix("°")
+        self.degrees_spin.setToolTip("隨機旋轉角度 (+/- degrees)")
+
+        self.fliplr_spin = QDoubleSpinBox()
+        self.fliplr_spin.setRange(0.0, 1.0)
+        self.fliplr_spin.setSingleStep(0.1)
+        self.fliplr_spin.setValue(0.5)
+        self.fliplr_spin.setPrefix("左右翻轉: ")
+        self.fliplr_spin.setToolTip("隨機左右翻轉機率 (Flip Left-Right)")
+
+        self.mosaic_spin = QDoubleSpinBox()
+        self.mosaic_spin.setRange(0.0, 1.0)
+        self.mosaic_spin.setSingleStep(0.1)
+        self.mosaic_spin.setValue(1.0)
+        self.mosaic_spin.setPrefix("Mosaic: ")
+        self.mosaic_spin.setToolTip("馬賽克增強機率")
+
+        row4_layout.addWidget(self.degrees_spin)
+        row4_layout.addWidget(self.fliplr_spin)
+        row4_layout.addWidget(self.mosaic_spin)
+
+        param_layout.addRow("資料增強:", row4_layout)
+
         param_group.setLayout(param_layout)
         layout.addWidget(param_group)
 
@@ -165,7 +223,14 @@ class TrainingTab(QWidget):
             "device": self.device_combo.currentText(),
             "workers": self.workers_spin.value(),
             "optimizer": self.optimizer_combo.currentText(),
-            "patience": self.patience_spin.value()
+            "patience": self.patience_spin.value(),
+            "lr0": self.lr0_spin.value(),
+            "cos_lr": self.cos_lr_check.isChecked(),
+            "rect": self.rect_check.isChecked(),
+            "cache": self.cache_check.isChecked(),
+            "degrees": self.degrees_spin.value(),
+            "fliplr": self.fliplr_spin.value(),
+            "mosaic": self.mosaic_spin.value()
         }
         self.train_requested.emit(config)
         self.log_output.append("請求訓練中...")
